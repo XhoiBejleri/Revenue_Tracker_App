@@ -3,15 +3,22 @@ package al.library.revenuetracker.service;
 import al.library.revenuetracker.model.Income;
 import al.library.revenuetracker.repository.IncomeRepository;
 import al.library.revenuetracker.repository.MonthlyIncomeSummaryRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @Service
 public class IncomeService {
+
+    private static final Logger logger = LoggerFactory.getLogger(IncomeService.class);
+
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -23,13 +30,41 @@ public class IncomeService {
     private final MonthlyIncomeSummaryRepository monthlyIncomeSummaryRepository;
 
     @Autowired
-    public IncomeService(IncomeRepository incomeRepository, MonthlyIncomeSummaryRepository monthlyIncomeSummaryRepository) {
+    private final EmailService emailService;
+
+    @Autowired
+    public IncomeService(IncomeRepository incomeRepository, MonthlyIncomeSummaryRepository monthlyIncomeSummaryRepository, EmailService emailService) {
         this.incomeRepository = incomeRepository;
         this.monthlyIncomeSummaryRepository = monthlyIncomeSummaryRepository;
+        this.emailService = emailService;
     }
 
-    public Income saveIncome(Income income) {
-        return incomeRepository.save(income);
+    public Income saveIncome(Income income){
+        Income savedIncome = incomeRepository.save(income);
+        String recipientEmail = "xbejleri@gmail.com";
+        String subject = "New Income Entry Added";
+        String body = String.format(
+                """
+                        A new income entry was added:
+
+                        ID: %d
+                        Item Type: %s
+                        Income Amount: %s
+                        Transaction Date: %s
+                        """,
+                savedIncome.getId(),
+                savedIncome.getItemType(),
+                savedIncome.getIncomeAmount(),
+                savedIncome.getLocalDate()
+        );
+        try {
+            emailService.sendSimpleMessage(recipientEmail, subject, body);
+            logger.info("Email send successfully to: {}", recipientEmail);
+        } catch (MailException e) {
+            logger.error("Failed to send email notification to recipient", e);
+        }
+        return savedIncome;
+
     }
 
     public List<Income> getAllIncome() {
