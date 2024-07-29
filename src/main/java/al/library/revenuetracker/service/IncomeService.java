@@ -41,6 +41,12 @@ public class IncomeService {
 
     public Income saveIncome(Income income){
         Income savedIncome = incomeRepository.save(income);
+
+        int year = LocalDate.now().getYear();
+        int month = LocalDate.now().getMonthValue();
+
+        BigDecimal totalIncomeForMonth = calculateTotalIncomeForMonth(year, month);
+
         String recipientEmail = "xbejleri@gmail.com";
         String subject = "New Income Entry Added";
         String body = String.format(
@@ -51,15 +57,20 @@ public class IncomeService {
                         Item Type: %s
                         Income Amount: %s
                         Transaction Date: %s
+                        
+                        Total Income for %s-%d: %s
                         """,
                 savedIncome.getId(),
                 savedIncome.getItemType(),
                 savedIncome.getIncomeAmount(),
-                savedIncome.getLocalDate()
+                savedIncome.getLocalDate(),
+                LocalDate.now().getMonth(),
+                year,
+                totalIncomeForMonth
         );
         try {
             emailService.sendSimpleMessage(recipientEmail, subject, body);
-            logger.info("Email send successfully to: {}", recipientEmail);
+            logger.info("Email sent successfully to: {}", recipientEmail);
         } catch (MailException e) {
             logger.error("Failed to send email notification to recipient", e);
         }
