@@ -8,11 +8,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-    @Autowired
-    JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
-    public void sendSimpleMessage(String recipientEmail, String subject, String text) {
+    @Autowired
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+
+        public void sendSimpleMessage(String recipientEmail, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("xbejleri@gmail.com");
         message.setTo(recipientEmail);

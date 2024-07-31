@@ -19,24 +19,17 @@ public class IncomeService {
 
     private static final Logger logger = LoggerFactory.getLogger(IncomeService.class);
 
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    @Autowired
     private final IncomeRepository incomeRepository;
-
-    @Autowired
     private final MonthlyIncomeSummaryRepository monthlyIncomeSummaryRepository;
-
-    @Autowired
     private final EmailService emailService;
 
     @Autowired
-    public IncomeService(IncomeRepository incomeRepository, MonthlyIncomeSummaryRepository monthlyIncomeSummaryRepository, EmailService emailService) {
+    public IncomeService(IncomeRepository incomeRepository, MonthlyIncomeSummaryRepository monthlyIncomeSummaryRepository, EmailService emailService, JdbcTemplate jdbcTemplate) {
         this.incomeRepository = incomeRepository;
         this.monthlyIncomeSummaryRepository = monthlyIncomeSummaryRepository;
         this.emailService = emailService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Income saveIncome(Income income){
@@ -55,7 +48,7 @@ public class IncomeService {
 
                         ID: %d
                         Item Type: %s
-                        Income Amount: %s
+                        Profit Amount: %s
                         Transaction Date: %s
                         
                         Total Income for %s-%d: %s
